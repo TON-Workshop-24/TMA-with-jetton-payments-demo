@@ -12,6 +12,7 @@
   "dependencies": {
     "@ton/ton": "^13.10.0",
     "@tonconnect/ui-react": "^2.0.1-beta.0",
+    "buffer": "^6.0.3",
     "eruda": "^2.11.2",
     "react": "^17.0.0",
     "react-dom": "^17.0.0",
