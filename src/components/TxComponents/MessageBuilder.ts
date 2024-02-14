@@ -20,7 +20,7 @@ export function createTransferBody() {
     const messageBody = beginCell()
         .storeUint(0x0f8a7ea5, 32) // opcode for jetton transfer
         .storeUint(0, 64) // query id
-        .storeCoins(toNano(5)) // jetton amount, amount * 10^9
+        .storeCoins(1000000) // jetton amount, amount * 10^9
         .storeAddress(destinationAddress)
         .storeAddress(destinationAddress) // response destination
         .storeBit(0) // no custom payload

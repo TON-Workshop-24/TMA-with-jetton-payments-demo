@@ -2,7 +2,8 @@ import React, {useCallback, useState} from 'react';
 import {Address} from '@ton/core';
 import ReactJson from 'react-json-view';
 import './style.scss';
-import {createTransferBody} from '../TxBuilder/MessageBuilder';
+import {createTransferBody} from '../TxComponents/MessageBuilder';
+import {tryGetResult} from '../TxComponents/TxListener';
 import {SendTransactionRequest, useTonConnectUI, useTonWallet} from "@tonconnect/ui-react";
 
 // In this example, we are using a predefined smart contract state initialization (`stateInit`)
@@ -19,36 +20,39 @@ const defaultTx: SendTransactionRequest = {
 			// The receiver's address.
 			address: Address.parse('EQAunkJ4YMGPxNLs6wdDt6Ge0ryShonsJ8tAZauh0unuLT4h').toString(),
 			// Amount to send in nanoTON. For example, 0.005 TON is 5000000 nanoTON.
-			amount: '5000000',
+			amount: '70000000',
 			// Payload for jetton transfer boc base64 format.
 			payload: JettonTransfer.toBoc().toString("base64") ,
 		},
-
-		// Uncomment the following message to send two messages in one transaction.
-		/*
-    {
-      // Note: Funds sent to this address will not be returned back to the sender.
-      address: '0:2ecf5e47d591eb67fa6c56b02b6bb1de6a530855e16ad3082eaa59859e8d5fdc',
-      amount: toNano('0.01').toString(),
-    }
-    */
-
 	],
 };
+
+
 
 export function TxForm() {
 	const [tx, setTx] = useState(defaultTx);
 	const wallet = useTonWallet();
 	const [tonConnectUi] = useTonConnectUI();
+	const [flag, setFlag] = useState(false);
+
+	async function handleSend(tx:SendTransactionRequest) {
+		setFlag(true);
+		const res = await tonConnectUi.sendTransaction(tx);
+		const checkRes = await tryGetResult(res.boc);
+		setFlag(false);
+	}
 
 	const onChange = useCallback((value: object) => setTx((value as { updated_src: typeof defaultTx }).updated_src), []);
 
 	return (
 		<div className="send-tx-form">
 			<h3>Configure and send transaction</h3>
+			{
+				flag ? <div>circle</div> : <div></div>
+			}
 			<ReactJson src={defaultTx} theme="ocean" onEdit={onChange} onAdd={onChange} onDelete={onChange} />
 			{wallet ? (
-				<button onClick={() => tonConnectUi.sendTransaction(tx)}>
+				<button onClick={() => handleSend(defaultTx) }>
 					Send transaction
 				</button>
 			) : (
