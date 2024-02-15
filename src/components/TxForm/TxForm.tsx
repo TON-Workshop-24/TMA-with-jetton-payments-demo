@@ -27,8 +27,6 @@ const defaultTx: SendTransactionRequest = {
 	],
 };
 
-
-
 export function TxForm() {
 	const [tx, setTx] = useState(defaultTx);
 	const wallet = useTonWallet();
@@ -41,6 +39,40 @@ export function TxForm() {
 		const checkRes = await tryGetResult(res.boc);
 		setFlag(false);
 	}
+
+	 function TextForm(props) { //copy text button from https://stackoverflow.com/questions/73134601/copy-text-button-function-in-react-js
+
+		const [text, setText] = useState('');
+
+		const handleCopy = () => {
+			navigator.clipboard.writeText(text);
+		}
+		const handleOnChange = (event) =>{
+			setText(event.target.value);
+		}
+		return (
+			<>
+				<div className='container'>
+					<h1>{props.heading} </h1>
+					<div className="mb-3">
+            <textarea className="form-control"
+					  value={text} id="myBox" rows="8" onChange={handleOnChange}></textarea>
+
+						<button className="btn btn-primary mx-2 my-2" onClick={handleCopy}>Copy Text</button>
+
+					</div>
+				</div>
+				<div className="container my-3">
+					<h2>Your text summary</h2>
+					<p>{text.split(" ").length} Word and {text.length} Characters</p>
+					<p>{0.008 * text.split(" ").length} Minute Read</p>
+					<h3>Preview</h3>
+					<p>{text}</p>
+				</div>
+			</>
+		)
+	}
+
 
 	const onChange = useCallback((value: object) => setTx((value as { updated_src: typeof defaultTx }).updated_src), []);
 
@@ -57,7 +89,9 @@ export function TxForm() {
 				</button>
 			) : (
 				<button onClick={() => tonConnectUi.openModal()}>Connect wallet to send the transaction</button>
+
 			)}
+			<button onClick={() => TextForm('txHash')}>tx link should appear here</button>
 		</div>
 	);
 }

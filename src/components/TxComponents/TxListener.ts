@@ -14,25 +14,25 @@ export async function tryGetResult( exBoc : string)  {
     for (const tx of transactions) {
         const inMsg = tx.inMessage;
 
-        if (inMsg?.info.type = 'external') {
+        if (inMsg?.info.type == 'external-in') {
 
             const sender = inMsg?.info.src;
-            const value = inMsg?.info.value.coins;
 
             //const originalBody = inMsg?.body.beginParse();
-            const inboc = inMsg?.body;
+            const inBOC = inMsg?.body;
 
-            if (typeof(inboc) == 'undefined') {
+            if (typeof(inBOC) == 'undefined') {
                 throw new Error('Invalid external');
             }
 
-            if (inboc.hash().toString('hex') == exBoc) {
+            if (inBOC.hash().toString('hex') == exBoc) {
                 console.log('Tx match');
+                const txHash = tx.hash().toString('hex');
                 console.log(`Transaction Hash: ${tx.hash().toString('hex')}`);
                 console.log(`Transaction LT: ${tx.lt}`);
                 console.log();
 
-                return tx;
+                return txHash;
             }
 
         }
