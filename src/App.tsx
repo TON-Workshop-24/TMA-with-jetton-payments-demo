@@ -4,6 +4,24 @@ import {Header} from "./components/Header/Header";
 import {TxForm} from "./components/TxForm/TxForm";
 import {Footer} from "./components/Footer/Footer";
 import {TonProofDemo} from "./components/TonProofDemo/TonProofDemo";
+import { createBrowserRouter, RouteObject, RouterProvider } from 'react-router-dom';
+import { Products } from './pages/Products';
+import { Cart } from './pages/Cart';
+
+const router = createBrowserRouter([
+  {
+    children: [
+      {
+        path: '/',
+        element: <Products />,
+      },
+      {
+        path: '/cart',
+        element: <Cart />
+      }
+    ]
+  }
+])
 
 function App() {
   return (
@@ -29,10 +47,11 @@ function App() {
           }}
       >
         <div className="app">
-            <Header />
-            <TxForm />
+          <RouterProvider router={router} />
+            {/*<Header />*/}
+            {/*<TxForm />*/}
             {/*<TonProofDemo />*/}
-            <Footer />
+            {/*<Footer />*/}
         </div>
       </TonConnectUIProvider>
   )
