@@ -1,9 +1,13 @@
 import { Box } from '../../components/Box';
 import { Product } from '../../components/Product';
-import data from '../../assets/products.json';
 import { css } from '@emotion/react';
 import { Tabs } from '../../components/Tabs';
 import { RadioGroup } from '../../components/RadioGroup';
+import { useCart } from '../../app/CartContext';
+import { useNavigate } from 'react-router-dom';
+import { useCallback } from 'react';
+import { Routes } from '../../constant';
+import { useBackButton, useMainButton } from '../../hooks';
 
 const styles = {
   header: css`
@@ -14,7 +18,18 @@ const styles = {
   `
 }
 
-export const Cart = () => {
+export const Checkout = () => {
+  const navigate = useNavigate();
+
+  const { cart } = useCart();
+
+  const handleClick = useCallback(() => {
+    navigate(Routes.ORDER_HISTORY)
+  }, [navigate])
+
+  useBackButton();
+  useMainButton({ text: 'Connect Ton Wallet', onClick: handleClick });
+
   return (
     <Box
       width="100%"
@@ -24,8 +39,8 @@ export const Cart = () => {
       <header css={styles.header}>Order ID: 123456789</header>
 
       <Box display="flex" flexDirection="column" width="100%" gap="8px">
-        {data.products.map((product, index) => (
-          <Product product={product} quantity={9} size="dense" key={index} />
+        {Object.values(cart).map((product, index) => (
+          <Product product={product} size="dense" key={index} />
         ))}
       </Box>
 

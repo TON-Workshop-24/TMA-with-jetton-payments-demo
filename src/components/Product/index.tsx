@@ -1,14 +1,7 @@
 import { styles } from './Product.styles';
 import { useCallback } from 'react';
 import { Box } from '../Box';
-
-export type ProductEntity = {
-  id: number;
-  shortName: string;
-  description: string;
-  price: number;
-  image: string;
-}
+import { Product as ProductEntity } from '../../app/CartContext';
 
 type Props = {
   /**
@@ -18,16 +11,11 @@ type Props = {
   /**
    * Invokes when the product is added to cart
    * */
-  onAdd?: (id: number) => void;
+  onAdd?: (product: ProductEntity) => void;
   /**
    * Invokes when the product is removed from cart
    * */
-  onRemove?: (id: number) => void;
-  /**
-   * If product is in cart, then the quantity exists.
-   * Min - 1, max - 9
-   * */
-  quantity?: number;
+  onRemove?: (product: ProductEntity) => void;
   /**
    * Product appearance variations.
    * Dense - oneline, default - full size
@@ -35,16 +23,16 @@ type Props = {
   size?: 'dense' | 'default';
 }
 
-export const Product = ({ product, quantity, onAdd, onRemove, size = 'default' }: Props) => {
+export const Product = ({ product, onAdd, onRemove, size = 'default' }: Props) => {
   const handleAdd = useCallback(() => {
     if (onAdd) {
-      onAdd(product.id);
+      onAdd(product);
     }
   }, [onAdd])
 
   const handleRemove = useCallback(() => {
     if (onRemove) {
-      onRemove(product.id);
+      onRemove(product);
     }
   }, [onRemove])
 
@@ -67,15 +55,15 @@ export const Product = ({ product, quantity, onAdd, onRemove, size = 'default' }
         </Box>
 
         <Box display="flex" gap="4px">
-          <button css={styles.quantityButton} disabled={quantity === 9}>+</button>
+          <button css={styles.quantityButton} disabled={product.quantity === 9}>+</button>
 
-          <div css={styles.quantity(size)}>{quantity}</div>
+          <div css={styles.quantity(size)}>{product.quantity}</div>
 
           <button css={styles.quantityButton}>-</button>
         </Box>
 
 
-        {quantity && <span css={styles.price}>${quantity * product.price}</span>}
+        {product.quantity && <span css={styles.price}>${product.quantity * product.price}</span>}
       </Box>
     )
   }
@@ -97,16 +85,16 @@ export const Product = ({ product, quantity, onAdd, onRemove, size = 'default' }
         </div>
       </div>
 
-      {!quantity && (
+      {!product.quantity && (
         <button css={styles.button} onClick={handleAdd}>Add to cart</button>
       )}
 
-      {quantity && (
+      {product.quantity > 0 && (
         <div css={styles.buttonGroup}>
-          <button css={styles.quantityButton} disabled={quantity === 9} onClick={handleAdd}>+</button>
+          <button css={styles.quantityButton} disabled={product.quantity === 9} onClick={handleAdd}>+</button>
 
           <div css={styles.quantity()}>
-            {quantity}
+            {product.quantity}
           </div>
 
           <button css={styles.quantityButton} onClick={handleRemove}>-</button>

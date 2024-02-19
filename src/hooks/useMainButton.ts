@@ -1,5 +1,6 @@
 import { useMainButton as useMainButtonComponent } from '@tma.js/sdk-react';
 import { useMount } from './useMount';
+import { useCallback, useMemo } from 'react';
 
 type Props = {
   text: string;
@@ -12,7 +13,7 @@ export const useMainButton = ({ text, onClick }: Props) => {
   useMount(() => {
     mainButton.on('click', onClick);
     mainButton.setParams({
-      text,
+      text: text.toUpperCase(),
       backgroundColor: '#0098EA',
       textColor: '#ffffff',
     });
