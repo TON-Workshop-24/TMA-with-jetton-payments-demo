@@ -13,8 +13,12 @@ export const Products = () => {
   const { cart, addProduct, removeProduct } = useCart();
 
   const handleClick = useCallback(() => {
-    navigate(Routes.CHECKOUT)
-  }, [navigate])
+    if (Object.keys(cart).length === 0) {
+      return;
+    }
+
+    navigate(Routes.CHECKOUT);
+  }, [cart, navigate])
 
   useMainButton({ text: 'View order', onClick: handleClick });
 

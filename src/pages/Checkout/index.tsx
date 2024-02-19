@@ -5,7 +5,7 @@ import { Tabs } from '../../components/Tabs';
 import { RadioGroup } from '../../components/RadioGroup';
 import { useCart } from '../../app/CartContext';
 import { useNavigate } from 'react-router-dom';
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { Routes } from '../../constant';
 import { useBackButton, useMainButton } from '../../hooks';
 
@@ -21,7 +21,7 @@ const styles = {
 export const Checkout = () => {
   const navigate = useNavigate();
 
-  const { cart } = useCart();
+  const { cart, addProduct, removeProduct } = useCart();
 
   const handleClick = useCallback(() => {
     navigate(Routes.ORDER_HISTORY)
@@ -29,6 +29,12 @@ export const Checkout = () => {
 
   useBackButton();
   useMainButton({ text: 'Connect Ton Wallet', onClick: handleClick });
+
+  useEffect(() => {
+    if (Object.keys(cart).length === 0) {
+      navigate(-1);
+    }
+  }, [cart, navigate]);
 
   return (
     <Box
@@ -40,7 +46,7 @@ export const Checkout = () => {
 
       <Box display="flex" flexDirection="column" width="100%" gap="8px">
         {Object.values(cart).map((product, index) => (
-          <Product product={product} size="dense" key={index} />
+          <Product product={product} size="dense" onAdd={addProduct} onRemove={removeProduct} key={index} />
         ))}
       </Box>
 

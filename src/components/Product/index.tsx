@@ -55,11 +55,17 @@ export const Product = ({ product, onAdd, onRemove, size = 'default' }: Props) =
         </Box>
 
         <Box display="flex" gap="4px">
-          <button css={styles.quantityButton} disabled={product.quantity === 9}>+</button>
+          <button
+            css={styles.quantityButton}
+            disabled={product.quantity === 9}
+            onClick={handleAdd}
+          >
+            +
+          </button>
 
           <div css={styles.quantity(size)}>{product.quantity}</div>
 
-          <button css={styles.quantityButton}>-</button>
+          <button css={styles.quantityButton} onClick={handleRemove}>-</button>
         </Box>
 
 
