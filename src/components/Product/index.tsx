@@ -21,20 +21,25 @@ type Props = {
    * Dense - oneline, default - full size
    * */
   size?: 'dense' | 'default';
+  /**
+   * Determines if new product can be added.
+   * Does not affect ability to increase quantity.
+   * */
+  canAdd?: boolean;
 }
 
-export const Product = ({ product, onAdd, onRemove, size = 'default' }: Props) => {
+export const Product = ({ canAdd = true, product, onAdd, onRemove, size = 'default' }: Props) => {
   const handleAdd = useCallback(() => {
     if (onAdd) {
       onAdd(product);
     }
-  }, [onAdd])
+  }, [product, onAdd])
 
   const handleRemove = useCallback(() => {
     if (onRemove) {
       onRemove(product);
     }
-  }, [onRemove])
+  }, [product, onRemove])
 
   if (size === 'dense') {
     return (
@@ -92,7 +97,7 @@ export const Product = ({ product, onAdd, onRemove, size = 'default' }: Props) =
       </div>
 
       {!product.quantity && (
-        <button css={styles.button} onClick={handleAdd}>Add to cart</button>
+        <button css={styles.button} disabled={!canAdd} onClick={handleAdd}>Add to cart</button>
       )}
 
       {product.quantity > 0 && (

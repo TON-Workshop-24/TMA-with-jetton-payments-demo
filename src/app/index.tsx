@@ -10,7 +10,6 @@ import { Checkout } from '../pages/Checkout';
 import { OrderHistory } from '../pages/OrderHistory';
 import { useCallback, useLayoutEffect, useState } from 'react';
 import { CartProvider, Cart, Product } from './CartContext';
-import { SDKProvider } from '../components/SDKProvider';
 import { useMiniApp, useViewport } from '@tma.js/sdk-react';
 import { Routes } from '../constant';
 

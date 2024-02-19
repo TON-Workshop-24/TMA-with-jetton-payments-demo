@@ -20,12 +20,20 @@ export const Products = () => {
     navigate(Routes.CHECKOUT);
   }, [cart, navigate])
 
-  useMainButton({ text: 'View order', onClick: handleClick });
+  const mainButton = useMainButton({ text: 'View order', onClick: handleClick, isEnabled: false });
+
+  useEffect(() => {
+    if (Object.keys(cart).length > 0 && !mainButton.isEnabled) {
+      mainButton.enable();
+      return;
+    }
+  }, [cart, mainButton]);
 
   return (
     <Box display="flex" flexDirection="column" gap="24px" width="100%" p="16px">
       {data.products.map((product, index) => (
         <Product
+          canAdd={Object.keys(cart).length < 3}
           product={product.id in cart ? cart[product.id] : { ...product, quantity: 0 }}
           onAdd={addProduct}
           onRemove={removeProduct}

@@ -42,6 +42,11 @@ export const styles = {
     font-weight: 600;
     background: #0098EA;
     font-size: 16px;
+
+    &:disabled {
+      background: #728a96;
+      color: #f6f7f8;
+    }
   `,
   quantity: (size: 'dense' | 'default' = 'default') => () => css`
     width: ${size === 'dense' ? '40px' : '100%'};
