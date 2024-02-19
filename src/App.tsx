@@ -7,6 +7,7 @@ import {TonProofDemo} from "./components/TonProofDemo/TonProofDemo";
 import { createBrowserRouter, RouteObject, RouterProvider } from 'react-router-dom';
 import { Products } from './pages/Products';
 import { Cart } from './pages/Cart';
+import { OrderHistory } from './pages/OrderHistory';
 
 const router = createBrowserRouter([
   {
@@ -18,6 +19,10 @@ const router = createBrowserRouter([
       {
         path: '/cart',
         element: <Cart />
+      },
+      {
+        path: '/order-history',
+        element: <OrderHistory />
       }
     ]
   }
@@ -48,10 +53,11 @@ function App() {
       >
         <div className="app">
           <RouterProvider router={router} />
-            {/*<Header />*/}
-            {/*<TxForm />*/}
-            {/*<TonProofDemo />*/}
-            {/*<Footer />*/}
+
+          {/*<Header />*/}
+          {/*<TxForm />*/}
+          {/*<TonProofDemo />*/}
+          {/*<Footer />*/}
         </div>
       </TonConnectUIProvider>
   )
