@@ -60,6 +60,10 @@ export const Product = ({ canAdd = true, product, onAdd, onRemove, size = 'defau
         </Box>
 
         <Box display="flex" gap="4px">
+          <button css={styles.quantityButton} onClick={handleRemove}>-</button>
+
+          <div css={styles.quantity(size)}>{product.quantity}</div>
+
           <button
             css={styles.quantityButton}
             disabled={product.quantity === 9}
@@ -67,10 +71,6 @@ export const Product = ({ canAdd = true, product, onAdd, onRemove, size = 'defau
           >
             +
           </button>
-
-          <div css={styles.quantity(size)}>{product.quantity}</div>
-
-          <button css={styles.quantityButton} onClick={handleRemove}>-</button>
         </Box>
 
 
@@ -81,7 +81,7 @@ export const Product = ({ canAdd = true, product, onAdd, onRemove, size = 'defau
 
   return (
     <div css={styles.container}>
-      <div css={styles.product}>
+    <div css={styles.product}>
         <img src={product.image} alt={product.shortName} css={styles.image} />
 
         <div css={styles.content}>
@@ -102,13 +102,13 @@ export const Product = ({ canAdd = true, product, onAdd, onRemove, size = 'defau
 
       {product.quantity > 0 && (
         <div css={styles.buttonGroup}>
-          <button css={styles.quantityButton} disabled={product.quantity === 9} onClick={handleAdd}>+</button>
+          <button css={styles.quantityButton} onClick={handleRemove}>-</button>
 
           <div css={styles.quantity()}>
             {product.quantity}
           </div>
 
-          <button css={styles.quantityButton} onClick={handleRemove}>-</button>
+          <button css={styles.quantityButton} disabled={product.quantity === 9} onClick={handleAdd}>+</button>
         </div>
       )}
     </div>
