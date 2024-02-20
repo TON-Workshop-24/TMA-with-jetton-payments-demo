@@ -5,9 +5,6 @@ import {TxForm} from "../components/TxForm/TxForm";
 import {Footer} from "../components/Footer/Footer";
 import {TonProofDemo} from "../components/TonProofDemo/TonProofDemo";
 import { createBrowserRouter, RouteObject, RouterProvider } from 'react-router-dom';
-import { Products } from '../pages/Products';
-import { Checkout } from '../pages/Checkout';
-import { OrderHistory } from '../pages/OrderHistory';
 import { useCallback, useLayoutEffect, useState } from 'react';
 import { CartProvider, Cart, Product } from './CartContext';
 import { useMiniApp, useViewport } from '@tma.js/sdk-react';
@@ -18,15 +15,24 @@ const router = createBrowserRouter([
     children: [
       {
         path: Routes.PRODUCTS,
-        element: <Products />,
+        lazy: () =>
+          import('../pages/Products').then((module) => ({
+            Component: module.Products,
+          })),
       },
       {
         path: Routes.CHECKOUT,
-        element: <Checkout />
+        lazy: () =>
+          import('../pages/Checkout').then((module) => ({
+            Component: module.Checkout,
+          })),
       },
       {
         path: Routes.ORDER_HISTORY,
-        element: <OrderHistory />
+        lazy: () =>
+          import('../pages/OrderHistory').then((module) => ({
+            Component: module.OrderHistory,
+          })),
       }
     ]
   }
