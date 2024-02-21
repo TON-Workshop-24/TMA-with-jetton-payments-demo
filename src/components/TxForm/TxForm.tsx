@@ -1,4 +1,4 @@
-import React, {useCallback, useState} from 'react';
+import React, { ChangeEvent, useCallback, useState } from 'react';
 import {Address} from '@ton/core';
 import ReactJson from 'react-json-view';
 import './style.scss';
@@ -40,23 +40,23 @@ export function TxForm() {
 		setFlag(false);
 	}
 
-	 function TextForm(props) { //copy text button from https://stackoverflow.com/questions/73134601/copy-text-button-function-in-react-js
+	 function TextForm(props: any) { //copy text button from https://stackoverflow.com/questions/73134601/copy-text-button-function-in-react-js
 
 		const [text, setText] = useState('');
 
 		const handleCopy = () => {
 			navigator.clipboard.writeText(text);
 		}
-		const handleOnChange = (event) =>{
+		const handleOnChange = (event: ChangeEvent<HTMLTextAreaElement>) =>{
 			setText(event.target.value);
 		}
-		return (
+		 return (
 			<>
 				<div className='container'>
 					<h1>{props.heading} </h1>
 					<div className="mb-3">
             <textarea className="form-control"
-					  value={text} id="myBox" rows="8" onChange={handleOnChange}></textarea>
+					  value={text} id="myBox" rows={8} onChange={handleOnChange}></textarea>
 
 						<button className="btn btn-primary mx-2 my-2" onClick={handleCopy}>Copy Text</button>
 
