@@ -1,4 +1,4 @@
-import { createContext, useContext } from 'react';
+import { createContext, Dispatch, SetStateAction, useContext } from 'react';
 
 type ProductEntity = {
   id: number;
@@ -19,14 +19,20 @@ type AppContextProviderValue = {
   cart: Cart;
   addProduct: (product: Product) => void;
   removeProduct: (product: Product) => void;
+
+  boc: string | null;
+  setBoc: Dispatch<SetStateAction<string | null>>;
 }
 
-const AppContextProvider = createContext<AppContextProviderValue>({
+const AppContext = createContext<AppContextProviderValue>({
   cart: {},
   addProduct: () => {},
-  removeProduct: () => {}
+  removeProduct: () => {},
+
+  boc: null,
+  setBoc: () => {},
 });
 
-export const AppProvider = AppContextProvider.Provider;
+export const AppProvider = AppContext.Provider;
 
-export const useApp/useAppContext = () => useContext(AppContextProvider);
+export const useAppContext = () => useContext(AppContext);

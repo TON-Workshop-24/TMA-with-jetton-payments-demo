@@ -1,18 +1,7 @@
-import { Box } from '../../components/Box';
-import { Product } from '../../components/Product';
-import { css } from '@emotion/react';
-import { Tabs } from '../../components/Tabs';
-import { RadioGroup } from '../../components/RadioGroup';
-import { useApp/useAppContext } from '../../app/AppContextProvider';
 import { useNavigate } from 'react-router-dom';
 import { useCallback, useEffect } from 'react';
 import { Routes } from '../../constant';
 import { useBackButton, useMainButton } from '../../hooks';
-
-
-
-// checkout imports
-
 import React, { ChangeEvent, useState } from 'react';
 import {Address} from '@ton/core';
 import ReactJson from 'react-json-view';
@@ -20,6 +9,12 @@ import '../../components/TxForm/style.scss';
 import {createTransferBody} from '../../components/TxComponents/MessageBuilder';
 import {tryGetResult} from '../../components/TxComponents/TxListener';
 import {SendTransactionRequest, useTonConnectUI, useTonWallet} from "@tonconnect/ui-react";
+import { useAppContext } from '../../app/AppContext';
+import { css } from '@emotion/react';
+import { Box } from '../../components/Box';
+import { Tabs } from '../../components/Tabs';
+import { Product } from '../../components/Product';
+import { RadioGroup } from '../../components/RadioGroup';
 
 const styles = {
   header: css`
@@ -34,13 +29,15 @@ export const Checkout = () => {
   const navigate = useNavigate();
   const [tonConnectUi] = useTonConnectUI();
   const [flag, setFlag] = useState(false);
-  const { setBoc, cart, addProduct, removeProduct } = useApp/useAppContext();
+
+  const { setBoc, cart, addProduct, removeProduct } = useAppContext();
+
 
   const wallet = useTonWallet();
   // In this example, we are using a predefined smart contract state initialization (`stateInit`)
 
-// to interact with an "EchoContract". This contract is designed to send the value back to the sender,
-// serving as a testing tool to prevent users from accidentally spending money.
+  // to interact with an "EchoContract". This contract is designed to send the value back to the sender,
+  // serving as a testing tool to prevent users from accidentally spending money.
   const JettonTransfer = createTransferBody();
 
   const defaultTx: SendTransactionRequest = {
@@ -72,50 +69,49 @@ export const Checkout = () => {
   }, [defaultTx, handleSend, wallet, tonConnectUi, navigate])
 
 
-    async function handleSend(tx:SendTransactionRequest) {
-      const res = await tonConnectUi.sendTransaction(tx);
-      const checkRes = await tryGetResult(res.boc);
+  async function handleSend(tx:SendTransactionRequest) {
+    const res = await tonConnectUi.sendTransaction(tx);
+    const checkRes = await tryGetResult(res.boc);
+  }
+
+  function TextForm(props: any) { //copy text button from https://stackoverflow.com/questions/73134601/copy-text-button-function-in-react-js
+    const [text, setText] = useState('');
+
+    const handleCopy = () => {
+      navigator.clipboard.writeText(text);
     }
-
-    function TextForm(props: any) { //copy text button from https://stackoverflow.com/questions/73134601/copy-text-button-function-in-react-js
-
-      const [text, setText] = useState('');
-
-      const handleCopy = () => {
-        navigator.clipboard.writeText(text);
-      }
-      const handleOnChange = (event: ChangeEvent<HTMLTextAreaElement>) =>{
-        setText(event.target.value);
-      }
-      return (
-          <>
-            <div className='container'>
-              <h1>{props.heading} </h1>
-              <div className="mb-3">
-            <textarea className="form-control"
-                      value={text} id="myBox" rows={8} onChange={handleOnChange}></textarea>
-
-                <button className="btn btn-primary mx-2 my-2" onClick={handleCopy}>Copy Text</button>
-
-              </div>
-            </div>
-            <div className="container my-3">
-              <h2>Your text summary</h2>
-              <p>{text.split(" ").length} Word and {text.length} Characters</p>
-              <p>{0.008 * text.split(" ").length} Minute Read</p>
-              <h3>Preview</h3>
-              <p>{text}</p>
-            </div>
-          </>
-      )
+    const handleOnChange = (event: ChangeEvent<HTMLTextAreaElement>) =>{
+      setText(event.target.value);
     }
+    return (
+      <>
+        <div className='container'>
+          <h1>{props.heading} </h1>
+          <div className="mb-3">
+            <textarea
+              className="form-control"
+              value={text} id="myBox"
+              rows={8}
+              onChange={handleOnChange}
+            />
 
+            <button className="btn btn-primary mx-2 my-2" onClick={handleCopy}>Copy Text</button>
 
-
+          </div>
+        </div>
+        <div className="container my-3">
+          <h2>Your text summary</h2>
+          <p>{text.split(" ").length} Word and {text.length} Characters</p>
+          <p>{0.008 * text.split(" ").length} Minute Read</p>
+          <h3>Preview</h3>
+          <p>{text}</p>
+        </div>
+      </>
+    )
+  }
 
   useBackButton();
   useMainButton({ text: 'Connect Ton Wallet', onClick: handleClick });
-
 
   useEffect(() => {
     if (Object.keys(cart).length === 0) {
@@ -147,7 +143,7 @@ export const Checkout = () => {
         />
       </Box>
 
-      <o
+      <RadioGroup
         name="address"
         options={[
           { id: 'address1', name: 'Praça Marquês de Pombal 12 A, 1250-162 Lisboa' },
