@@ -14,18 +14,19 @@ export type Product = ProductEntity & {
 
 export type Cart = Record<number, Product>;
 
-type CartContextValue = {
+
+type AppContextProviderValue = {
   cart: Cart;
   addProduct: (product: Product) => void;
   removeProduct: (product: Product) => void;
 }
 
-const CartContext = createContext<CartContextValue>({
+const AppContextProvider = createContext<AppContextProviderValue>({
   cart: {},
   addProduct: () => {},
   removeProduct: () => {}
 });
 
-export const CartProvider = CartContext.Provider;
+export const AppProvider = AppContextProvider.Provider;
 
-export const useCart = () => useContext(CartContext);
+export const useApp/useAppContext = () => useContext(AppContextProvider);

@@ -3,11 +3,23 @@ import { Product } from '../../components/Product';
 import { css } from '@emotion/react';
 import { Tabs } from '../../components/Tabs';
 import { RadioGroup } from '../../components/RadioGroup';
-import { useCart } from '../../app/CartContext';
+import { useApp/useAppContext } from '../../app/AppContextProvider';
 import { useNavigate } from 'react-router-dom';
 import { useCallback, useEffect } from 'react';
 import { Routes } from '../../constant';
 import { useBackButton, useMainButton } from '../../hooks';
+
+
+
+// checkout imports
+
+import React, { ChangeEvent, useState } from 'react';
+import {Address} from '@ton/core';
+import ReactJson from 'react-json-view';
+import '../../components/TxForm/style.scss';
+import {createTransferBody} from '../../components/TxComponents/MessageBuilder';
+import {tryGetResult} from '../../components/TxComponents/TxListener';
+import {SendTransactionRequest, useTonConnectUI, useTonWallet} from "@tonconnect/ui-react";
 
 const styles = {
   header: css`
@@ -20,15 +32,90 @@ const styles = {
 
 export const Checkout = () => {
   const navigate = useNavigate();
+  const [tonConnectUi] = useTonConnectUI();
+  const [flag, setFlag] = useState(false);
+  const { setBoc, cart, addProduct, removeProduct } = useApp/useAppContext();
 
-  const { cart, addProduct, removeProduct } = useCart();
+  const wallet = useTonWallet();
+  // In this example, we are using a predefined smart contract state initialization (`stateInit`)
+
+// to interact with an "EchoContract". This contract is designed to send the value back to the sender,
+// serving as a testing tool to prevent users from accidentally spending money.
+  const JettonTransfer = createTransferBody();
+
+  const defaultTx: SendTransactionRequest = {
+    // The transaction is valid for 10 minutes from now, in unix epoch seconds.
+    validUntil: Math.floor(Date.now() / 1000) + 600,
+    messages: [
+
+      {
+        // The receiver's address.
+        address: Address.parse('EQAunkJ4YMGPxNLs6wdDt6Ge0ryShonsJ8tAZauh0unuLT4h').toString(),
+        // Amount to send in nanoTON. For example, 0.005 TON is 5000000 nanoTON.
+        amount: '70000000',
+        // Payload for jetton transfer boc base64 format.
+        payload: JettonTransfer.toBoc().toString("base64") ,
+      },
+    ],
+  };
+  const [tx, setTx] = useState(defaultTx);
+
 
   const handleClick = useCallback(() => {
-    navigate(Routes.ORDER_HISTORY)
-  }, [navigate])
+    if (wallet) {
+      handleSend(defaultTx);
+      navigate(Routes.ORDER_HISTORY);
+    }
+    else {
+      tonConnectUi.openModal();
+    }
+  }, [defaultTx, handleSend, wallet, tonConnectUi, navigate])
+
+
+    async function handleSend(tx:SendTransactionRequest) {
+      const res = await tonConnectUi.sendTransaction(tx);
+      const checkRes = await tryGetResult(res.boc);
+    }
+
+    function TextForm(props: any) { //copy text button from https://stackoverflow.com/questions/73134601/copy-text-button-function-in-react-js
+
+      const [text, setText] = useState('');
+
+      const handleCopy = () => {
+        navigator.clipboard.writeText(text);
+      }
+      const handleOnChange = (event: ChangeEvent<HTMLTextAreaElement>) =>{
+        setText(event.target.value);
+      }
+      return (
+          <>
+            <div className='container'>
+              <h1>{props.heading} </h1>
+              <div className="mb-3">
+            <textarea className="form-control"
+                      value={text} id="myBox" rows={8} onChange={handleOnChange}></textarea>
+
+                <button className="btn btn-primary mx-2 my-2" onClick={handleCopy}>Copy Text</button>
+
+              </div>
+            </div>
+            <div className="container my-3">
+              <h2>Your text summary</h2>
+              <p>{text.split(" ").length} Word and {text.length} Characters</p>
+              <p>{0.008 * text.split(" ").length} Minute Read</p>
+              <h3>Preview</h3>
+              <p>{text}</p>
+            </div>
+          </>
+      )
+    }
+
+
+
 
   useBackButton();
   useMainButton({ text: 'Connect Ton Wallet', onClick: handleClick });
+
 
   useEffect(() => {
     if (Object.keys(cart).length === 0) {
@@ -60,7 +147,7 @@ export const Checkout = () => {
         />
       </Box>
 
-      <RadioGroup
+      <o
         name="address"
         options={[
           { id: 'address1', name: 'Praça Marquês de Pombal 12 A, 1250-162 Lisboa' },

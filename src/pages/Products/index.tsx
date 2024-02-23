@@ -1,7 +1,7 @@
 import data from '../../assets/products.json';
 import { Box } from '../../components/Box';
 import { Product } from '../../components/Product';
-import { useCart } from '../../app/CartContext';
+import { useApp/useAppContext } from '../../app/AppContextProvider';
 import { useMainButton } from '../../hooks';
 import { useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -10,7 +10,7 @@ import { Routes } from '../../constant';
 export const Products = () => {
   const navigate = useNavigate();
 
-  const { cart, addProduct, removeProduct } = useCart();
+  const { cart, addProduct, removeProduct } = useApp/useAppContext();
 
   const handleClick = useCallback(() => {
     if (Object.keys(cart).length === 0) {

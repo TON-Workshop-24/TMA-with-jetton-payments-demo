@@ -1,6 +1,6 @@
 import { useCloudStorage } from '@tma.js/sdk-react';
 import { useCallback, useEffect, useState } from 'react';
-import { Cart } from '../app/CartContext';
+import { Cart } from '../app/AppContextProvider';
 
 export type Order = {
   id: string;

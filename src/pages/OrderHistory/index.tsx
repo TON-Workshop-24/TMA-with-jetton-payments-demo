@@ -4,6 +4,7 @@ import { useBackButton, useMainButton } from '../../hooks';
 import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Routes } from '../../constant';
+import {tryGetResult} from '../../components/TxComponents/TxListener';
 
 type Order = {
   id: string;

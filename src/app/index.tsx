@@ -6,10 +6,11 @@ import {Footer} from "../components/Footer/Footer";
 import {TonProofDemo} from "../components/TonProofDemo/TonProofDemo";
 import { createBrowserRouter, RouteObject, RouterProvider } from 'react-router-dom';
 import { useCallback, useLayoutEffect, useState } from 'react';
-import { CartProvider, Cart, Product } from './CartContext';
+import { AppProvider, Cart, Product } from './AppContextProvider';
 import { useMiniApp, useViewport } from '@tma.js/sdk-react';
 import { Routes } from '../constant';
 
+const Boc = "";
 const router = createBrowserRouter([
   {
     children: [
@@ -42,6 +43,7 @@ function App() {
   const miniApp = useMiniApp();
   const viewport = useViewport();
 
+  const [boc, setBoc] = useState({});
   const [cart, setCart] = useState<Cart>({});
 
   const addProduct = useCallback((product: Product) => {
@@ -110,7 +112,7 @@ function App() {
         twaReturnUrl: 'https://t.me/tc_twa_demo_bot/start'
       }}
     >
-      <CartProvider value={{ cart, addProduct, removeProduct }}>
+      <AppProvider value={{ cart, addProduct, removeProduct }}>
         <div className="app">
           <RouterProvider router={router} />
 
@@ -119,7 +121,7 @@ function App() {
           {/*<TonProofDemo />*/}
           {/*<Footer />*/}
         </div>
-      </CartProvider>
+      </AppProvider>
     </TonConnectUIProvider>
   )
 }
