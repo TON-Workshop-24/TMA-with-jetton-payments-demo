@@ -12,26 +12,11 @@ import error = Simulate.error;
 type Order = {
   id: string;
   status: 'pending' | 'fulfilled';
-  link: null | string;
+  link: string;
 }
-
-const {boc} = useAppContext();
-
-if (typeof(boc) !== 'string') {
-  throw new Error("bad boc");
-}
-
-const TxHash = tryGetResult(boc);
-
-if (typeof(TxHash) !== 'string') {
-
-  throw new Error("bad tx hash");
-}
-//const TxHash = 'hashhashonikuryathash';
-
 
 const orders: Order[] = [
-  { id: '12345', status: 'pending', link : TxHash },
+  { id: '12345', status: 'pending', link : "TxHash" },
   { id: '54321', status: 'fulfilled', link: "TxHash" },
 ]
 
@@ -41,6 +26,15 @@ const statusMap = {
 }
 
 export const OrderHistory = () => {
+
+  const {boc} = useAppContext();
+
+  if (typeof(boc) !== 'string') {
+    throw new Error("Invalid boc");
+  }
+
+  const TxHash = tryGetResult(boc);
+
 
   const navigate = useNavigate();
 
@@ -75,6 +69,9 @@ export const OrderHistory = () => {
 
               <span>
               {statusMap[order.status]}
+            </span>
+            <span>
+              {order.link}
             </span>
             </div>
           </Box>
