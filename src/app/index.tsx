@@ -10,7 +10,6 @@ import { AppProvider, Cart, Product } from './AppContext';
 import { useMiniApp, useViewport } from '@tma.js/sdk-react';
 import { Routes } from '../constant';
 
-const Boc = "";
 const router = createBrowserRouter([
   {
     children: [

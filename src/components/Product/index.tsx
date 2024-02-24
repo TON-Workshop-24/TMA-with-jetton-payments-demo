@@ -1,7 +1,7 @@
 import { styles } from './Product.styles';
 import { useCallback } from 'react';
 import { Box } from '../Box';
-import { Product as ProductEntity } from 'src/app/AppContext';
+import { Product as ProductEntity } from '../../app/AppContext';
 
 type Props = {
   /**

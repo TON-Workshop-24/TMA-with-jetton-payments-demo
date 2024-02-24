@@ -4,16 +4,35 @@ import { useBackButton, useMainButton } from '../../hooks';
 import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Routes } from '../../constant';
+import {useAppContext} from "../../app/AppContext";
 import {tryGetResult} from '../../components/TxComponents/TxListener';
+import {Simulate} from "react-dom/test-utils";
+import error = Simulate.error;
 
 type Order = {
   id: string;
   status: 'pending' | 'fulfilled';
+  link: null | string;
 }
 
+const {boc} = useAppContext();
+
+if (typeof(boc) !== 'string') {
+  throw new Error("bad boc");
+}
+
+const TxHash = tryGetResult(boc);
+
+if (typeof(TxHash) !== 'string') {
+
+  throw new Error("bad tx hash");
+}
+//const TxHash = 'hashhashonikuryathash';
+
+
 const orders: Order[] = [
-  { id: '12345', status: 'pending' },
-  { id: '54321', status: 'fulfilled' },
+  { id: '12345', status: 'pending', link : TxHash },
+  { id: '54321', status: 'fulfilled', link: "TxHash" },
 ]
 
 const statusMap = {
@@ -22,6 +41,7 @@ const statusMap = {
 }
 
 export const OrderHistory = () => {
+
   const navigate = useNavigate();
 
   const handleClick = useCallback(() => {
@@ -51,7 +71,7 @@ export const OrderHistory = () => {
             <h3 css={styles.title}>ID: {order.id}</h3>
 
             <div css={styles.status}>
-              <img src={`/images/order-${order.status}.svg`} alt={order.status} css={styles.statusImage} />
+              <img src={`/images/order-${order.status}.svg`} alt={order.status}  css={styles.statusImage} />
 
               <span>
               {statusMap[order.status]}
