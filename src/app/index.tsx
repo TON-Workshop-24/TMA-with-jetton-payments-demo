@@ -6,7 +6,7 @@ import {Footer} from "../components/Footer/Footer";
 import {TonProofDemo} from "../components/TonProofDemo/TonProofDemo";
 import { createBrowserRouter, RouteObject, RouterProvider } from 'react-router-dom';
 import { useCallback, useLayoutEffect, useState } from 'react';
-import { AppProvider, Cart, Product } from './AppContextProvider';
+import { AppProvider, Cart, Product } from './AppContext';
 import { useMiniApp, useViewport } from '@tma.js/sdk-react';
 import { Routes } from '../constant';
 
@@ -43,7 +43,7 @@ function App() {
   const miniApp = useMiniApp();
   const viewport = useViewport();
 
-  const [boc, setBoc] = useState({});
+  const [boc, setBoc] = useState<string | null>(null);
   const [cart, setCart] = useState<Cart>({});
 
   const addProduct = useCallback((product: Product) => {
@@ -112,7 +112,7 @@ function App() {
         twaReturnUrl: 'https://t.me/tc_twa_demo_bot/start'
       }}
     >
-      <AppProvider value={{ cart, addProduct, removeProduct }}>
+      <AppProvider value={{ cart, addProduct, removeProduct, boc, setBoc }}>
         <div className="app">
           <RouterProvider router={router} />
 
