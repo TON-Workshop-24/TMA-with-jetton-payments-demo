@@ -58,20 +58,39 @@ export const Checkout = () => {
   const [tx, setTx] = useState(defaultTx);
 
 
-  const handleClick = useCallback(() => {
+  const handleClick =  useCallback(async() => {
     if (wallet) {
-      handleSend(defaultTx);
+      const boc = await  handleSend(defaultTx);
+      if (boc == "") {
+        console.error('boc is empty');
+        throw new Error('boc is empty');
+      }
+      setBoc(boc);
       navigate(Routes.ORDER_HISTORY);
     }
     else {
       tonConnectUi.openModal();
     }
-  }, [defaultTx, handleSend, wallet, tonConnectUi, navigate])
+  }, [defaultTx, handleSend, wallet, tonConnectUi, navigate, setBoc])
 
 
-  async function handleSend(tx:SendTransactionRequest) {
-    const res = await tonConnectUi.sendTransaction(tx);
-    const checkRes = await tryGetResult(res.boc);
+  async function handleSend(tx:SendTransactionRequest) : Promise<string>  {
+    try {
+      const res = await tonConnectUi.sendTransaction(tx);
+      const checkRes = await tryGetResult(res.boc);
+      if (checkRes) {
+        return checkRes;
+      }
+      // Если tryGetResult не нашла транзакцию и не было выброшено исключение,
+      // можете вернуть здесь стандартное значение или обработать этот случай
+    } catch (error) {
+      console.error('Error during transaction check:', error);
+      // Обработка ошибки, например, можно вернуть null или выбросить исключение дальше
+      throw error; // или return null;
+    }
+
+    return "";
+
   }
 
   function TextForm(props: any) { //copy text button from https://stackoverflow.com/questions/73134601/copy-text-button-function-in-react-js
