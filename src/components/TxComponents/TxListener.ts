@@ -1,4 +1,4 @@
-import {Address, TonClient} from '@ton/ton';
+import {Address, TonClient, Cell, beginCell, storeMessage} from '@ton/ton';
 import {Buffer} from "buffer";
 import { sha256 } from '@ton/crypto';
 
@@ -20,7 +20,6 @@ export async function tryGetResult(exBoc: string): Promise<string> {
 
             for (const tx of transactions) {
                 const inMsg = tx.inMessage;
-                console.log('checking the tx', tx, tx.hash().toString('hex'));
                 if (inMsg?.info.type === 'external-in') {
 
                     const inBOC = inMsg?.body;
@@ -29,14 +28,16 @@ export async function tryGetResult(exBoc: string): Promise<string> {
                         reject(new Error('Invalid external'));
                         return;
                     }
-                    const exBoxBuffer =  Buffer.from(exBoc, 'hex');
-                    const exBocHash = sha256(exBoxBuffer);
-                    const targetHash = exBocHash.toString();
-                    console.log('original BOC', targetHash);
-                    console.log('inMsg hash', inBOC.hash().toString('hex') );
+                    const extHash = Cell.fromBase64(exBoc).hash().toString('hex')
+                    const inHash = beginCell().store(storeMessage(inMsg)).endCell().hash().toString('hex')
+
+                    console.log(' hash BOC', extHash);
+                    console.log('inMsg hash', inHash );
+                    console.log('checking the tx', tx, tx.hash().toString('hex'));
+
 
                     // Assuming `inBOC.hash()` is synchronous and returns a hash object with a `toString` method
-                    if (inBOC.hash().toString('hex') === targetHash) {
+                    if (extHash=== inHash) {
                         console.log('Tx match');
                         const txHash = tx.hash().toString('hex');
                         console.log(`Transaction Hash: ${txHash}`);
