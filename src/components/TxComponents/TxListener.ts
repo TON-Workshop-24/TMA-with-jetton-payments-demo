@@ -1,4 +1,6 @@
 import {Address, TonClient} from '@ton/ton';
+import {Buffer} from "buffer";
+import { sha256 } from '@ton/crypto';
 
 export async function tryGetResult(exBoc: string): Promise<string> {
     const client = new TonClient({
@@ -18,17 +20,23 @@ export async function tryGetResult(exBoc: string): Promise<string> {
 
             for (const tx of transactions) {
                 const inMsg = tx.inMessage;
-
+                console.log('checking the tx', tx, tx.hash().toString('hex'));
                 if (inMsg?.info.type === 'external-in') {
-                    const inBOC = inMsg?.body;
 
+                    const inBOC = inMsg?.body;
                     if (typeof inBOC === 'undefined') {
+
                         reject(new Error('Invalid external'));
                         return;
                     }
+                    const exBoxBuffer =  Buffer.from(exBoc, 'hex');
+                    const exBocHash = sha256(exBoxBuffer);
+                    const targetHash = exBocHash.toString();
+                    console.log('original BOC', targetHash);
+                    console.log('inMsg hash', inBOC.hash().toString('hex') );
 
                     // Assuming `inBOC.hash()` is synchronous and returns a hash object with a `toString` method
-                    if (inBOC.hash().toString('hex') === exBoc) {
+                    if (inBOC.hash().toString('hex') === targetHash) {
                         console.log('Tx match');
                         const txHash = tx.hash().toString('hex');
                         console.log(`Transaction Hash: ${txHash}`);
