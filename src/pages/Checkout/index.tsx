@@ -60,12 +60,12 @@ export const Checkout = () => {
 
   const handleClick =  useCallback(async() => {
     if (wallet) {
-      const boc = await  handleSend(defaultTx);
-      if (boc == "") {
-        console.error('boc is empty');
-        throw new Error('boc is empty');
+      const txHash = await  handleSend(defaultTx);
+      if (txHash == "") {
+        console.error('TxHash is empty');
+        throw new Error('TxHash is empty');
       }
-      setBoc(boc);
+      setBoc(txHash);
       navigate(Routes.ORDER_HISTORY);
     }
     else {

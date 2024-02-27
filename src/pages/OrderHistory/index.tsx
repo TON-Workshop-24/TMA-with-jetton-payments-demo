@@ -15,9 +15,12 @@ type Order = {
   link: string;
 }
 
+const browserURL = "https://tonviewer.com/";
+const browserTx = "transaction/";
+
 const orders: Order[] = [
-  { id: '12345', status: 'pending', link : "TxHash" },
-  { id: '54321', status: 'fulfilled', link: "TxHash" },
+  { id: '12345', status: 'pending', link : "" },
+  { id: '54321', status: 'fulfilled', link: "" },
 ]
 
 const statusMap = {
@@ -33,7 +36,6 @@ export const OrderHistory = () => {
     throw new Error("Invalid boc");
   }
 
-  const TxHash = tryGetResult(boc);
 
 
   const navigate = useNavigate();
@@ -66,13 +68,8 @@ export const OrderHistory = () => {
 
             <div css={styles.status}>
               <img src={`/images/order-${order.status}.svg`} alt={order.status}  css={styles.statusImage} />
-
-              <span>
-              {statusMap[order.status]}
-            </span>
-            <span>
-              {order.link}
-            </span>
+               <span>{statusMap[order.status]}</span>
+              <a href={browserURL + browserTx + boc} target="_blank" rel="noopener noreferrer">View Tx</a>
             </div>
           </Box>
         ))}
