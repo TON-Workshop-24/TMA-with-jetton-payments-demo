@@ -1,6 +1,4 @@
 import {Address, TonClient, Cell, beginCell, storeMessage} from '@ton/ton';
-import {Buffer} from "buffer";
-import { sha256 } from '@ton/crypto';
 
 export async function tryGetResult(exBoc: string): Promise<string> {
     const client = new TonClient({
