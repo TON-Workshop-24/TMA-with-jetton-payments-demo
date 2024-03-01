@@ -103,29 +103,61 @@ export async function tryProcessJetton(exBoc: string): Promise<string> {
             await prepare();
 
             const Transactions = await Subscription();
-            for (const tx in Transactions) {
+            for (const tx of Transactions) {
 
 
-                const onTransaction = async (tx) => {
+                const onTransaction = async (tx : Transaction) => {
 
-                    const sourceAddress = tx.in_msg.source;
+                    const sourceAddress = tx.inMessage?.info.src;
                     if (!sourceAddress) {
                         // external message - not related to jettons
                         return;
                     }
+
+                    if (!(sourceAddress instanceof Address)) {
+                        return;
+                    }
+
+                    const in_msg = tx.inMessage;
+
+                    if (in_msg?.info.type !== 'internal') {
+                        // external message - not related to jettons
+                        return;
+                    }
+
                     const jettonName = jettonWalletAddressToJettonName(sourceAddress);
                     if (!jettonName) {
                         // unknown or fake jetton transfer
                         return;
                     }
+                }
 
-                    if (!tx.in_msg.msg_data ||
+
+
+                    if (!in_msg?.data ||
                         tx.in_msg.msg_data['@type'] !== 'msg.dataRaw' ||
                         !tx.in_msg.msg_data.body
                     ) {
                         // no in_msg or in_msg body
                         return;
                     }
+
+                    /// msg_reader
+                    const inMsg = tx.inMessage;
+                    if (inMsg?.info.type === 'external-in') {
+
+                        const inBOC = inMsg?.body;
+                        if (typeof inBOC === 'undefined') {
+
+                            reject(new Error('Invalid external'));
+                            return;
+                        }
+                        const extHash = Cell.fromBase64(exBoc).hash().toString('hex')
+                        const inHash = beginCell().store(storeMessage(inMsg)).endCell().hash().toString('hex')
+
+                    /// msg_reader
+
+                    const msgBod = tx.inMessage
 
                     const msgBody = TonWeb.utils.base64ToBytes(tx.in_msg.msg_data.body);
 

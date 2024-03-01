@@ -12,6 +12,7 @@
   "dependencies": {
     "@emotion/react": "^11.11.3",
     "@tma.js/sdk-react": "^1.0.1",
+    "@ton-community/assets-sdk": "^0.0.4",
     "@ton/ton": "^13.10.0",
     "@tonconnect/ui-react": "^2.0.1-beta.0",
     "buffer": "^6.0.3",
