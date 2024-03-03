@@ -30,9 +30,9 @@ const statusMap = {
 
 export const OrderHistory = () => {
 
-  const {boc} = useAppContext();
+  const {txHash} = useAppContext();
 
-  if (typeof(boc) !== 'string') {
+  if (typeof(txHash) !== 'string') {
     throw new Error("Invalid boc");
   }
 
@@ -69,7 +69,7 @@ export const OrderHistory = () => {
             <div css={styles.status}>
               <img src={`/images/order-${order.status}.svg`} alt={order.status}  css={styles.statusImage} />
                <span>{statusMap[order.status]}</span>
-              <a href={browserURL + browserTx + boc} target="_blank" rel="noopener noreferrer">View Tx</a>
+              <a href={browserURL + browserTx + txHash} target="_blank" rel="noopener noreferrer">View Tx</a>
             </div>
           </Box>
         ))}

@@ -10,7 +10,7 @@ import {
     Transaction
 } from '@ton/ton';
 import {TupleReader} from '@ton/core';
-export async function tryProcessJetton(exBoc: string): Promise<string> {
+export async function tryProcessJetton(orderId: string) {
     const client = new TonClient({
         endpoint: 'https://toncenter.com/api/v2/jsonRPC',
         apiKey: '1b312c91c3b691255130350a49ac5a0742454725f910756aff94dfe44858388e',
@@ -102,90 +102,71 @@ export async function tryProcessJetton(exBoc: string): Promise<string> {
         const init = async () => {
             await prepare();
 
-            const Transactions = await Subscription();
-            for (const tx of Transactions) {
+            while(true) {
 
 
-                const onTransaction = async (tx : Transaction) => {
-
-                    const sourceAddress = tx.inMessage?.info.src;
-                    if (!sourceAddress) {
-                        // external message - not related to jettons
-                        return;
-                    }
-
-                    if (!(sourceAddress instanceof Address)) {
-                        return;
-                    }
-
-                    const in_msg = tx.inMessage;
-
-                    if (in_msg?.info.type !== 'internal') {
-                        // external message - not related to jettons
-                        return;
-                    }
-
-                    const jettonName = jettonWalletAddressToJettonName(sourceAddress);
-                    if (!jettonName) {
-                        // unknown or fake jetton transfer
-                        return;
-                    }
-                }
+                const Transactions = await Subscription();
+                for (const tx of Transactions) {
 
 
+                    const onTransaction = async (tx: Transaction) => {
 
-                    if (!in_msg?.data ||
-                        tx.in_msg.msg_data['@type'] !== 'msg.dataRaw' ||
-                        !tx.in_msg.msg_data.body
-                    ) {
-                        // no in_msg or in_msg body
-                        return;
-                    }
-
-                    /// msg_reader
-                    const inMsg = tx.inMessage;
-                    if (inMsg?.info.type === 'external-in') {
-
-                        const inBOC = inMsg?.body;
-                        if (typeof inBOC === 'undefined') {
-
-                            reject(new Error('Invalid external'));
+                        const sourceAddress = tx.inMessage?.info.src;
+                        if (!sourceAddress) {
+                            // external message - not related to jettons
                             return;
                         }
-                        const extHash = Cell.fromBase64(exBoc).hash().toString('hex')
-                        const inHash = beginCell().store(storeMessage(inMsg)).endCell().hash().toString('hex')
 
-                    /// msg_reader
+                        if (!(sourceAddress instanceof Address)) {
+                            return;
+                        }
 
-                    const msgBod = tx.inMessage
+                        const in_msg = tx.inMessage;
 
-                    const msgBody = TonWeb.utils.base64ToBytes(tx.in_msg.msg_data.body);
+                        if (in_msg?.info.type !== 'internal') {
+                            // external message - not related to jettons
+                            return;
+                        }
 
-                    const cell = TonWeb.boc.Cell.oneFromBoc(msgBody);
-                    const slice = cell.beginParse();
-                    const op = slice.loadUint(32);
-                    if (!op.eq(new TonWeb.utils.BN(0x7362d09c))) return; // op == transfer_notification
-                    const queryId = slice.loadUint(64);
-                    const amount = slice.loadCoins();
-                    const from = slice.loadAddress();
-                    const maybeRef = slice.loadBit();
-                    const payload = maybeRef ? slice.loadRef() : slice;
-                    const payloadOp = payload.loadUint(32);
-                    if (!payloadOp.eq(new TonWeb.utils.BN(0))) {
-                        console.log('no text comment in transfer_notification');
-                        return;
+                        const jettonName = jettonWalletAddressToJettonName(sourceAddress);
+                        if (!jettonName) {
+                            // unknown or fake jetton transfer
+                            return;
+                        }
+
+                        if (tx.inMessage === undefined || tx.inMessage?.body.hash().equals(new Cell().hash())) {
+                            // no in_msg or in_msg body
+                            return;
+                        }
+
+                        const msgBody = tx.inMessage;
+                        const sender = tx.inMessage?.info.src;
+                        const originalBody = tx.inMessage?.body.beginParse();
+                        let body = originalBody?.clone();
+                        const op = body?.loadUint(32);
+
+                        if (!(op == 0x7362d09c)) return; // op == transfer_notification
+                        const queryId = body?.loadUint(64);
+                        const amount = body?.loadCoins();
+                        const from = body?.loadAddress();
+                        const maybeRef = body?.loadBit();
+                        const payload = maybeRef ? body?.loadRef().beginParse() : body;
+                        const payloadOp = payload?.loadUint(32);
+                        if (!(payloadOp == 0)) {
+                            console.log('no text comment in transfer_notification');
+                            return;
+                        }
+
+                        const comment = payload?.loadStringTail();
+                        if (!(comment == orderId)) {
+                            return;
+                        }
+                        console.log('Got ' + jettonName + ' jetton deposit ' + amount?.toString() + ' units with text comment "' + comment + '"');
+                        const txHash = tx.hash().toString('hex');
+                        return (txHash);
                     }
-                    const payloadBytes = payload.loadBits(slice.getFreeBits());
-                    const comment = new TextDecoder().decode(payloadBytes);
-                    console.log('Got ' + jettonName + ' jetton deposit ' + amount.toString() + ' units with text comment "' + comment + '"');
                 }
-
             }
-
-            const accountSubscription = new AccountSubscription(tonweb, MY_WALLET_ADDRESS, 0, onTransaction);
-            await accountSubscription.start();
         }
-
         init();
-
 }

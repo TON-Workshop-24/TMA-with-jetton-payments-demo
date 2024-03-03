@@ -30,7 +30,7 @@ export const Checkout = () => {
   const [tonConnectUi] = useTonConnectUI();
   const [flag, setFlag] = useState(false);
 
-  const { setBoc, cart, addProduct, removeProduct } = useAppContext();
+  const { setTxHash, cart, addProduct, removeProduct } = useAppContext();
 
 
   const wallet = useTonWallet();
@@ -65,13 +65,13 @@ export const Checkout = () => {
         console.error('TxHash is empty');
         throw new Error('TxHash is empty');
       }
-      setBoc(txHash);
+      setTxHash(txHash);
       navigate(Routes.ORDER_HISTORY);
     }
     else {
       tonConnectUi.openModal();
     }
-  }, [defaultTx, handleSend, wallet, tonConnectUi, navigate, setBoc])
+  }, [defaultTx, handleSend, wallet, tonConnectUi, navigate, setTxHash])
 
 
   async function handleSend(tx:SendTransactionRequest) : Promise<string>  {

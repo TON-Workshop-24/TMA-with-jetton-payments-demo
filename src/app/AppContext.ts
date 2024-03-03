@@ -20,8 +20,8 @@ type AppContextProviderValue = {
   addProduct: (product: Product) => void;
   removeProduct: (product: Product) => void;
 
-  boc: string | null;
-  setBoc: Dispatch<SetStateAction<string | null>>;
+  txHash: string | null;
+  setTxHash: Dispatch<SetStateAction<string | null>>;
 }
 
 const AppContext = createContext<AppContextProviderValue>({
@@ -29,8 +29,8 @@ const AppContext = createContext<AppContextProviderValue>({
   addProduct: () => {},
   removeProduct: () => {},
 
-  boc: null,
-  setBoc: () => {},
+  txHash: null,
+  setTxHash: () => {},
 });
 
 export const AppProvider = AppContext.Provider;

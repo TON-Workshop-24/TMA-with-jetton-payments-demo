@@ -42,7 +42,7 @@ function App() {
   const miniApp = useMiniApp();
   const viewport = useViewport();
 
-  const [boc, setBoc] = useState<string | null>(null);
+  const [txHash, setTxHash] = useState<string | null>(null);
   const [cart, setCart] = useState<Cart>({});
 
   const addProduct = useCallback((product: Product) => {
@@ -111,7 +111,7 @@ function App() {
         twaReturnUrl: 'https://t.me/tc_twa_demo_bot/start'
       }}
     >
-      <AppProvider value={{ cart, addProduct, removeProduct, boc, setBoc }}>
+      <AppProvider value={{ cart, addProduct, removeProduct, txHash, setTxHash }}>
         <div className="app">
           <RouterProvider router={router} />
 
