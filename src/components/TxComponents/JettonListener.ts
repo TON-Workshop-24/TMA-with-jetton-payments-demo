@@ -94,7 +94,6 @@ export async function tryProcessJetton(orderId: string) : Promise<string> {
             limit: 5,
         });
         return transactions;
-           // }
     }
 
 
@@ -110,33 +109,45 @@ export async function tryProcessJetton(orderId: string) : Promise<string> {
                 const Transactions = await Subscription();
                 for (const tx of Transactions) {
 
+                    console.log('current transaction', tx.hash().toString('hex'));
+
                     const sourceAddress = tx.inMessage?.info.src;
                     if (!sourceAddress) {
                         // external message - not related to jettons
-                        return;
+                        continue;
                     }
 
+                    console.log('source Address check passed', tx.hash().toString('hex'));
+
                     if (!(sourceAddress instanceof Address)) {
-                        return;
+                        continue;
                     }
+
+                    console.log('source Address instance check passed', tx.hash().toString('hex'));
 
                     const in_msg = tx.inMessage;
 
                     if (in_msg?.info.type !== 'internal') {
                         // external message - not related to jettons
-                        return;
+                        continue;
                     }
 
-                    const jettonName = jettonWalletAddressToJettonName(sourceAddress);
-                    if (!jettonName) {
-                        // unknown or fake jetton transfer
-                        return;
-                    }
+                    console.log('internal type check', tx.hash().toString('hex'));
+
+                    // const jettonName = jettonWalletAddressToJettonName(sourceAddress);
+                    // if (!jettonName) {
+                    //     // unknown or fake jetton transfer
+                    //     continue;
+                    // }
+
+                    console.log('jetton Name passed', tx.hash().toString('hex'));
 
                     if (tx.inMessage === undefined || tx.inMessage?.body.hash().equals(new Cell().hash())) {
                         // no in_msg or in_msg body
-                        return;
+                        continue;
                     }
+
+                    console.log('msg body', tx.hash().toString('hex'));
 
                     const msgBody = tx.inMessage;
                     const sender = tx.inMessage?.info.src;
@@ -144,7 +155,15 @@ export async function tryProcessJetton(orderId: string) : Promise<string> {
                     let body = originalBody?.clone();
                     const op = body?.loadUint(32);
 
-                    if (!(op == 0x7362d09c)) return; // op == transfer_notification
+                    console.log('op code =', op);
+
+                    if (!(op == 0x7362d09c))
+                    {
+                        continue; // op == transfer_notification
+                    }
+
+                    console.log('op code check passed', tx.hash().toString('hex'));
+
                     const queryId = body?.loadUint(64);
                     const amount = body?.loadCoins();
                     const from = body?.loadAddress();
@@ -153,17 +172,17 @@ export async function tryProcessJetton(orderId: string) : Promise<string> {
                     const payloadOp = payload?.loadUint(32);
                     if (!(payloadOp == 0)) {
                         console.log('no text comment in transfer_notification');
-                        return;
+                        continue;
                     }
 
                     const comment = payload?.loadStringTail();
                     if (!(comment == orderId)) {
-                        return;
+                        continue;
                     }
-                    console.log('Got ' + jettonName + ' jetton deposit ' + amount?.toString() + ' units with text comment "' + comment + '"');
+                    // jettonName
+                    console.log('Got ' + ' jetton deposit ' + amount?.toString() + ' units with text comment "' + comment + '"');
                     const txHash = tx.hash().toString('hex');
                     resolve(txHash);
-                    return;
                 }
 
                 // Add a small delay here to prevent hammering the API too hard
@@ -172,6 +191,5 @@ export async function tryProcessJetton(orderId: string) : Promise<string> {
         });
         return Promise.race([searchPromise, timeoutPromise]);
     }
-
     init();
 }

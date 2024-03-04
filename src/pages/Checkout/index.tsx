@@ -65,7 +65,7 @@ export const Checkout = () => {
   const handleClick =  useCallback(async() => {
     if (wallet) {
       const txHash = await  handleSend(defaultTx);
-      if (txHash == "") {
+      if (txHash === "") {
         console.error('TxHash is empty');
         throw new Error('TxHash is empty');
       }
