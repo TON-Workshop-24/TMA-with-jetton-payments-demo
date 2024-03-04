@@ -18,6 +18,10 @@ type Order = {
 const browserURL = "https://tonviewer.com/";
 const browserTx = "transaction/";
 
+
+//TO DO create hooks and Idgenerator
+const orderId = '12345';
+
 const orders: Order[] = [
   { id: '12345', status: 'pending', link : "" },
   { id: '54321', status: 'fulfilled', link: "" },
@@ -33,7 +37,7 @@ export const OrderHistory = () => {
   const {txHash} = useAppContext();
 
   if (typeof(txHash) !== 'string') {
-    throw new Error("Invalid boc");
+    throw new Error("Invalid txHash");
   }
 
 

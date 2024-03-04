@@ -6,7 +6,7 @@ import {Address, beginCell, toNano} from '@ton/ton'
 // forward_ton_amount:(VarUInteger 16) forward_payload:(Either Cell ^Cell)
 // = InternalMsgBody;
 
-export function createTransferBody() {
+export function createTransferBody(orderId:string) {
     const Wallet_SRC = Address.parse('UQCFv_2OqxdVm4IFOps-XCkW6xeug49b9FTyk8fbI-cIuj3A');
 
     const jettonWalletAddress = Address.parse('EQAunkJ4YMGPxNLs6wdDt6Ge0ryShonsJ8tAZauh0unuLT4h');
@@ -14,7 +14,7 @@ export function createTransferBody() {
 
     const forwardPayload = beginCell()
         .storeUint(0, 32) // 0 opcode means we have a comment
-        .storeStringTail('Hello, TON!')
+        .storeStringTail(orderId)
         .endCell();
 
     const messageBody = beginCell()

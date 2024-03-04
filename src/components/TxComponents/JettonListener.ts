@@ -10,7 +10,7 @@ import {
     Transaction
 } from '@ton/ton';
 import {TupleReader} from '@ton/core';
-export async function tryProcessJetton(orderId: string) {
+export async function tryProcessJetton(orderId: string) : Promise<string> {
     const client = new TonClient({
         endpoint: 'https://toncenter.com/api/v2/jsonRPC',
         apiKey: '1b312c91c3b691255130350a49ac5a0742454725f910756aff94dfe44858388e',
@@ -89,84 +89,89 @@ export async function tryProcessJetton(orderId: string) {
             apiKey: '1b312c91c3b691255130350a49ac5a0742454725f910756aff94dfe44858388e',
         });
 
-        const myAddress = Address.parse('UQCFv_2OqxdVm4IFOps-XCkW6xeug49b9FTyk8fbI-cIuj3A'); // Address to fetch transactions from
+        const myAddress = Address.parse('UQCFv_2OqxdVm4IFOps-XCkW6xeug49b9FTyk8fbI-cIuj3A'); // Address of receiver TON wallet
         const transactions = await client.getTransactions(myAddress, {
             limit: 5,
         });
         return transactions;
            // }
-}
+    }
 
 
 
-        const init = async () => {
-            await prepare();
+    const init = async () => {
+        await prepare();
 
-            while(true) {
+        const timeoutPromise = new Promise<string>((_, reject) => setTimeout(() => reject(new Error('Timeout after 30 seconds')), 30000));
+        const searchPromise = new Promise<string>(async (resolve, reject) => {
 
+            while (true) {
 
                 const Transactions = await Subscription();
                 for (const tx of Transactions) {
 
-
-                    const onTransaction = async (tx: Transaction) => {
-
-                        const sourceAddress = tx.inMessage?.info.src;
-                        if (!sourceAddress) {
-                            // external message - not related to jettons
-                            return;
-                        }
-
-                        if (!(sourceAddress instanceof Address)) {
-                            return;
-                        }
-
-                        const in_msg = tx.inMessage;
-
-                        if (in_msg?.info.type !== 'internal') {
-                            // external message - not related to jettons
-                            return;
-                        }
-
-                        const jettonName = jettonWalletAddressToJettonName(sourceAddress);
-                        if (!jettonName) {
-                            // unknown or fake jetton transfer
-                            return;
-                        }
-
-                        if (tx.inMessage === undefined || tx.inMessage?.body.hash().equals(new Cell().hash())) {
-                            // no in_msg or in_msg body
-                            return;
-                        }
-
-                        const msgBody = tx.inMessage;
-                        const sender = tx.inMessage?.info.src;
-                        const originalBody = tx.inMessage?.body.beginParse();
-                        let body = originalBody?.clone();
-                        const op = body?.loadUint(32);
-
-                        if (!(op == 0x7362d09c)) return; // op == transfer_notification
-                        const queryId = body?.loadUint(64);
-                        const amount = body?.loadCoins();
-                        const from = body?.loadAddress();
-                        const maybeRef = body?.loadBit();
-                        const payload = maybeRef ? body?.loadRef().beginParse() : body;
-                        const payloadOp = payload?.loadUint(32);
-                        if (!(payloadOp == 0)) {
-                            console.log('no text comment in transfer_notification');
-                            return;
-                        }
-
-                        const comment = payload?.loadStringTail();
-                        if (!(comment == orderId)) {
-                            return;
-                        }
-                        console.log('Got ' + jettonName + ' jetton deposit ' + amount?.toString() + ' units with text comment "' + comment + '"');
-                        const txHash = tx.hash().toString('hex');
-                        return (txHash);
+                    const sourceAddress = tx.inMessage?.info.src;
+                    if (!sourceAddress) {
+                        // external message - not related to jettons
+                        return;
                     }
+
+                    if (!(sourceAddress instanceof Address)) {
+                        return;
+                    }
+
+                    const in_msg = tx.inMessage;
+
+                    if (in_msg?.info.type !== 'internal') {
+                        // external message - not related to jettons
+                        return;
+                    }
+
+                    const jettonName = jettonWalletAddressToJettonName(sourceAddress);
+                    if (!jettonName) {
+                        // unknown or fake jetton transfer
+                        return;
+                    }
+
+                    if (tx.inMessage === undefined || tx.inMessage?.body.hash().equals(new Cell().hash())) {
+                        // no in_msg or in_msg body
+                        return;
+                    }
+
+                    const msgBody = tx.inMessage;
+                    const sender = tx.inMessage?.info.src;
+                    const originalBody = tx.inMessage?.body.beginParse();
+                    let body = originalBody?.clone();
+                    const op = body?.loadUint(32);
+
+                    if (!(op == 0x7362d09c)) return; // op == transfer_notification
+                    const queryId = body?.loadUint(64);
+                    const amount = body?.loadCoins();
+                    const from = body?.loadAddress();
+                    const maybeRef = body?.loadBit();
+                    const payload = maybeRef ? body?.loadRef().beginParse() : body;
+                    const payloadOp = payload?.loadUint(32);
+                    if (!(payloadOp == 0)) {
+                        console.log('no text comment in transfer_notification');
+                        return;
+                    }
+
+                    const comment = payload?.loadStringTail();
+                    if (!(comment == orderId)) {
+                        return;
+                    }
+                    console.log('Got ' + jettonName + ' jetton deposit ' + amount?.toString() + ' units with text comment "' + comment + '"');
+                    const txHash = tx.hash().toString('hex');
+                    resolve(txHash);
+                    return;
                 }
+
+                // Add a small delay here to prevent hammering the API too hard
+                await new Promise(resolve => setTimeout(resolve, 1000));
             }
-        }
-        init();
+        });
+        return Promise.race([searchPromise, timeoutPromise]);
+    }
+
+    init();
 }

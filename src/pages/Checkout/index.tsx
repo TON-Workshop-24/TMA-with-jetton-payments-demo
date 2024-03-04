@@ -7,7 +7,7 @@ import {Address} from '@ton/core';
 import ReactJson from 'react-json-view';
 import '../../components/TxForm/style.scss';
 import {createTransferBody} from '../../components/TxComponents/MessageBuilder';
-import {tryGetResult} from '../../components/TxComponents/TxListener';
+import {tryProcessJetton} from "../../components/TxComponents/JettonListener";
 import {SendTransactionRequest, useTonConnectUI, useTonWallet} from "@tonconnect/ui-react";
 import { useAppContext } from '../../app/AppContext';
 import { css } from '@emotion/react';
@@ -28,6 +28,10 @@ const styles = {
 export const Checkout = () => {
   const navigate = useNavigate();
   const [tonConnectUi] = useTonConnectUI();
+
+  //TO DO create hooks and Idgenerator
+  const orderId = '12345';
+
   const [flag, setFlag] = useState(false);
 
   const { setTxHash, cart, addProduct, removeProduct } = useAppContext();
@@ -38,7 +42,7 @@ export const Checkout = () => {
 
   // to interact with an "EchoContract". This contract is designed to send the value back to the sender,
   // serving as a testing tool to prevent users from accidentally spending money.
-  const JettonTransfer = createTransferBody();
+  const JettonTransfer = createTransferBody(orderId);
 
   const defaultTx: SendTransactionRequest = {
     // The transaction is valid for 10 minutes from now, in unix epoch seconds.
@@ -77,7 +81,8 @@ export const Checkout = () => {
   async function handleSend(tx:SendTransactionRequest) : Promise<string>  {
     try {
       const res = await tonConnectUi.sendTransaction(tx);
-      const checkRes = await tryGetResult(res.boc);
+
+      const checkRes = await tryProcessJetton(orderId);
       if (checkRes) {
         return checkRes;
       }
