@@ -83,10 +83,11 @@ export const Checkout = () => {
       const res = await tonConnectUi.sendTransaction(tx);
 
       const checkRes = await tryProcessJetton(orderId);
+      console.log('found tx', checkRes);
       if (checkRes) {
         return checkRes;
       }
-      // Если tryGetResult не нашла транзакцию и не было выброшено исключение,
+      // Если tryProcessJetton не нашла транзакцию и не было выброшено исключение,
       // можете вернуть здесь стандартное значение или обработать этот случай
     } catch (error) {
       console.error('Error during transaction check:', error);

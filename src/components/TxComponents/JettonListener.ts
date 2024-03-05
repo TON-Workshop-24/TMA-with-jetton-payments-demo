@@ -183,6 +183,7 @@ export async function tryProcessJetton(orderId: string) : Promise<string> {
                     console.log('Got ' + ' jetton deposit ' + amount?.toString() + ' units with text comment "' + comment + '"');
                     const txHash = tx.hash().toString('hex');
                     resolve(txHash);
+                    return;
                 }
 
                 // Add a small delay here to prevent hammering the API too hard
