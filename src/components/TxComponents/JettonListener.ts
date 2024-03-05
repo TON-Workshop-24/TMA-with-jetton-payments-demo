@@ -126,9 +126,7 @@ export async function tryProcessJetton(orderId: string) : Promise<string> {
     return retry(async () => {
 
         await prepare();
-        // const timeoutPromise = new Promise<string>((_, reject) => setTimeout(() => reject(new Error('Timeout after 30 seconds')), 30000));
-        // const searchPromise = new Promise<string>(async (resolve, reject) => {
-        const Transactions = await Subscription();
+       const Transactions = await Subscription();
 
         for (const tx of Transactions) {
 
@@ -157,14 +155,13 @@ export async function tryProcessJetton(orderId: string) : Promise<string> {
 
             console.log('internal type check', tx.hash().toString('hex'));
 
-            // TODO repair jetton transfer name check
+            // TODO fix jetton transfer name check
             // const jettonName = jettonWalletAddressToJettonName(sourceAddress);
             // if (!jettonName) {
             //     // unknown or fake jetton transfer
             //     continue;
             // }
-
-            console.log('jetton Name passed', tx.hash().toString('hex'));
+            //console.log('jetton Name passed', tx.hash().toString('hex'));
 
             if (tx.inMessage === undefined || tx.inMessage?.body.hash().equals(new Cell().hash())) {
                 // no in_msg or in_msg body
@@ -207,63 +204,9 @@ export async function tryProcessJetton(orderId: string) : Promise<string> {
             const txHash = tx.hash().toString('hex');
             return (txHash);
         }
-
-        // Add a small delay here to prevent hammering the API too hard
-        // await new Promise(resolve => setTimeout(resolve, 1000));
-
-
         throw new Error('Transaction not found');
     }, {retries: 30, delay: 1000});
-    // init();
 }
 
 
 
-//
-// export async function findActionByComment(assetsSdk: AssetsSDK, options: {
-//     jettonMinterAddress: Address,
-//     recipientAddress: Address,
-//     comment: string,
-// }): Promise<{
-//     action: JettonWalletTransferReceivedAction,
-//     message: JettonInternalTransferMessage,
-//     transaction: Transaction,
-// }> {
-//     const {jettonMinterAddress, recipientAddress, comment} = options;
-//
-//     const jettonMinter = assetsSdk.openJetton(jettonMinterAddress);
-//     const jettonWallet = await jettonMinter.getWallet(recipientAddress);
-//
-//     return retry(async () => {
-//         const actions = await jettonWallet.getActions();
-//         for (const action of actions) {
-//             if (action.kind !== 'jetton_transfer_received') {
-//                 continue;
-//             }
-//
-//             const body = action.transaction.inMessage?.body!;
-//             const internalTransferMessage = loadJettonInternalTransferMessage(body.beginParse());
-//
-//             const forwardPayload = internalTransferMessage.forwardPayload;
-//             if (!forwardPayload) {
-//                 continue;
-//             }
-//
-//             const transfer = loadTransferMessage(forwardPayload.beginParse());
-//             if (transfer.kind !== 'text_message') {
-//                 continue;
-//             }
-//
-//             if (transfer.text !== comment) {
-//                 continue;
-//             }
-//
-//             return {
-//                 action: action,
-//                 message: internalTransferMessage,
-//                 transaction: action.transaction,
-//             };
-//         }
-//         throw new Error('Action not found');
-//     }, {retries: 30, delay: 1000});
-// }

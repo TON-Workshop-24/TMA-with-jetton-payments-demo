@@ -30,7 +30,7 @@ export const Checkout = () => {
   const [tonConnectUi] = useTonConnectUI();
 
   //TO DO create hooks and Idgenerator
-  const orderId = '12345';
+  const orderId = '123456';
 
   const [flag, setFlag] = useState(false);
 
