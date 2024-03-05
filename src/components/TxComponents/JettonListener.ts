@@ -10,6 +10,12 @@ import {
     Transaction
 } from '@ton/ton';
 import {TupleReader} from '@ton/core';
+import {
+    AssetsSDK,
+    JettonInternalTransferMessage,
+    JettonWalletTransferReceivedAction,
+    loadJettonInternalTransferMessage, loadTransferMessage
+} from "@ton-community/assets-sdk";
 
 
 export async function retry<T>(fn: () => Promise<T>, options: { retries: number, delay: number }): Promise<T> {
@@ -116,170 +122,148 @@ export async function tryProcessJetton(orderId: string) : Promise<string> {
 
 
 
-    const init = async () => {
+
+    return retry(async () => {
+
         await prepare();
+        // const timeoutPromise = new Promise<string>((_, reject) => setTimeout(() => reject(new Error('Timeout after 30 seconds')), 30000));
+        // const searchPromise = new Promise<string>(async (resolve, reject) => {
+        const Transactions = await Subscription();
 
-        const timeoutPromise = new Promise<string>((_, reject) => setTimeout(() => reject(new Error('Timeout after 30 seconds')), 30000));
-        const searchPromise = new Promise<string>(async (resolve, reject) => {
+        for (const tx of Transactions) {
 
-            while (true) {
+            console.log('current transaction', tx.hash().toString('hex'));
 
-                const Transactions = await Subscription();
-                for (const tx of Transactions) {
-
-                    console.log('current transaction', tx.hash().toString('hex'));
-
-                    const sourceAddress = tx.inMessage?.info.src;
-                    if (!sourceAddress) {
-                        // external message - not related to jettons
-                        continue;
-                    }
-
-                    console.log('source Address check passed', tx.hash().toString('hex'));
-
-                    if (!(sourceAddress instanceof Address)) {
-                        continue;
-                    }
-
-                    console.log('source Address instance check passed', tx.hash().toString('hex'));
-
-                    const in_msg = tx.inMessage;
-
-                    if (in_msg?.info.type !== 'internal') {
-                        // external message - not related to jettons
-                        continue;
-                    }
-
-                    console.log('internal type check', tx.hash().toString('hex'));
-
-                    // const jettonName = jettonWalletAddressToJettonName(sourceAddress);
-                    // if (!jettonName) {
-                    //     // unknown or fake jetton transfer
-                    //     continue;
-                    // }
-
-                    console.log('jetton Name passed', tx.hash().toString('hex'));
-
-                    if (tx.inMessage === undefined || tx.inMessage?.body.hash().equals(new Cell().hash())) {
-                        // no in_msg or in_msg body
-                        continue;
-                    }
-
-                    console.log('msg body', tx.hash().toString('hex'));
-
-                    const msgBody = tx.inMessage;
-                    const sender = tx.inMessage?.info.src;
-                    const originalBody = tx.inMessage?.body.beginParse();
-                    let body = originalBody?.clone();
-                    const op = body?.loadUint(32);
-
-                    console.log('op code =', op);
-
-                    if (!(op == 0x7362d09c))
-                    {
-                        continue; // op == transfer_notification
-                    }
-
-                    console.log('op code check passed', tx.hash().toString('hex'));
-
-                    const queryId = body?.loadUint(64);
-                    const amount = body?.loadCoins();
-                    const from = body?.loadAddress();
-                    const maybeRef = body?.loadBit();
-                    const payload = maybeRef ? body?.loadRef().beginParse() : body;
-                    const payloadOp = payload?.loadUint(32);
-                    if (!(payloadOp == 0)) {
-                        console.log('no text comment in transfer_notification');
-                        continue;
-                    }
-
-                    const comment = payload?.loadStringTail();
-                    if (!(comment == orderId)) {
-                        continue;
-                    }
-                    // jettonName
-                    console.log('Got ' + ' jetton deposit ' + amount?.toString() + ' units with text comment "' + comment + '"');
-                    const txHash = tx.hash().toString('hex');
-                    resolve(txHash);
-                    return;
-                }
-
-                // Add a small delay here to prevent hammering the API too hard
-                await new Promise(resolve => setTimeout(resolve, 1000));
-            }
-        });
-        return Promise.race([searchPromise, timeoutPromise]);
-    }
-    init();
-}
-
-
-
-
-
-export async function tryGetResult(exBoc: string): Promise<string> {
-    const client = new TonClient({
-        endpoint: 'https://toncenter.com/api/v2/jsonRPC',
-        apiKey: '1b312c91c3b691255130350a49ac5a0742454725f910756aff94dfe44858388e',
-    });
-
-
-    const myAddress = Address.parse('UQCFv_2OqxdVm4IFOps-XCkW6xeug49b9FTyk8fbI-cIuj3A'); // Address to fetch transactions from
-
-
-    const timeoutPromise = new Promise<string>((_, reject) => setTimeout(() => reject(new Error('Timeout after 30 seconds')), 30000));
-
-
-    const searchPromise = new Promise<string>(async (resolve, reject) => {
-        while (true) {
-            const transactions = await client.getTransactions(myAddress, {
-                limit: 5,
-            });
-
-
-            for (const tx of transactions) {
-                const inMsg = tx.inMessage;
-                if (inMsg?.info.type === 'external-in') {
-
-
-                    const inBOC = inMsg?.body;
-                    if (typeof inBOC === 'undefined') {
-
-
-                        reject(new Error('Invalid external'));
-                        return;
-                    }
-                    const extHash = Cell.fromBase64(exBoc).hash().toString('hex')
-                    const inHash = beginCell().store(storeMessage(inMsg)).endCell().hash().toString('hex')
-
-
-                    console.log(' hash BOC', extHash);
-                    console.log('inMsg hash', inHash);
-                    console.log('checking the tx', tx, tx.hash().toString('hex'));
-
-
-
-
-                    // Assuming `inBOC.hash()` is synchronous and returns a hash object with a `toString` method
-                    if (extHash === inHash) {
-                        console.log('Tx match');
-                        const txHash = tx.hash().toString('hex');
-                        console.log(`Transaction Hash: ${txHash}`);
-                        console.log(`Transaction LT: ${tx.lt}`);
-                        resolve(txHash);
-                        return;
-                    }
-                }
+            const sourceAddress = tx.inMessage?.info.src;
+            if (!sourceAddress) {
+                // external message - not related to jettons
+                continue;
             }
 
+            console.log('source Address check passed', tx.hash().toString('hex'));
 
-            // Add a small delay here to prevent hammering the API too hard
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            if (!(sourceAddress instanceof Address)) {
+                continue;
+            }
+
+            console.log('source Address instance check passed', tx.hash().toString('hex'));
+
+            const in_msg = tx.inMessage;
+
+            if (in_msg?.info.type !== 'internal') {
+                // external message - not related to jettons
+                continue;
+            }
+
+            console.log('internal type check', tx.hash().toString('hex'));
+
+            // TODO repair jetton transfer name check
+            // const jettonName = jettonWalletAddressToJettonName(sourceAddress);
+            // if (!jettonName) {
+            //     // unknown or fake jetton transfer
+            //     continue;
+            // }
+
+            console.log('jetton Name passed', tx.hash().toString('hex'));
+
+            if (tx.inMessage === undefined || tx.inMessage?.body.hash().equals(new Cell().hash())) {
+                // no in_msg or in_msg body
+                continue;
+            }
+
+            console.log('msg body', tx.hash().toString('hex'));
+
+            const msgBody = tx.inMessage;
+            const sender = tx.inMessage?.info.src;
+            const originalBody = tx.inMessage?.body.beginParse();
+            let body = originalBody?.clone();
+            const op = body?.loadUint(32);
+
+            console.log('op code =', op);
+
+            if (!(op == 0x7362d09c)) {
+                continue; // op == transfer_notification
+            }
+
+            console.log('op code check passed', tx.hash().toString('hex'));
+
+            const queryId = body?.loadUint(64);
+            const amount = body?.loadCoins();
+            const from = body?.loadAddress();
+            const maybeRef = body?.loadBit();
+            const payload = maybeRef ? body?.loadRef().beginParse() : body;
+            const payloadOp = payload?.loadUint(32);
+            if (!(payloadOp == 0)) {
+                console.log('no text comment in transfer_notification');
+                continue;
+            }
+
+            const comment = payload?.loadStringTail();
+            if (!(comment == orderId)) {
+                continue;
+            }
+            // jettonName
+            console.log('Got ' + ' jetton deposit ' + amount?.toString() + ' units with text comment "' + comment + '"');
+            const txHash = tx.hash().toString('hex');
+            return (txHash);
         }
-    });
+
+        // Add a small delay here to prevent hammering the API too hard
+        // await new Promise(resolve => setTimeout(resolve, 1000));
 
 
-    return Promise.race([searchPromise, timeoutPromise]);
+        throw new Error('Transaction not found');
+    }, {retries: 30, delay: 1000});
+    // init();
 }
 
 
+
+//
+// export async function findActionByComment(assetsSdk: AssetsSDK, options: {
+//     jettonMinterAddress: Address,
+//     recipientAddress: Address,
+//     comment: string,
+// }): Promise<{
+//     action: JettonWalletTransferReceivedAction,
+//     message: JettonInternalTransferMessage,
+//     transaction: Transaction,
+// }> {
+//     const {jettonMinterAddress, recipientAddress, comment} = options;
+//
+//     const jettonMinter = assetsSdk.openJetton(jettonMinterAddress);
+//     const jettonWallet = await jettonMinter.getWallet(recipientAddress);
+//
+//     return retry(async () => {
+//         const actions = await jettonWallet.getActions();
+//         for (const action of actions) {
+//             if (action.kind !== 'jetton_transfer_received') {
+//                 continue;
+//             }
+//
+//             const body = action.transaction.inMessage?.body!;
+//             const internalTransferMessage = loadJettonInternalTransferMessage(body.beginParse());
+//
+//             const forwardPayload = internalTransferMessage.forwardPayload;
+//             if (!forwardPayload) {
+//                 continue;
+//             }
+//
+//             const transfer = loadTransferMessage(forwardPayload.beginParse());
+//             if (transfer.kind !== 'text_message') {
+//                 continue;
+//             }
+//
+//             if (transfer.text !== comment) {
+//                 continue;
+//             }
+//
+//             return {
+//                 action: action,
+//                 message: internalTransferMessage,
+//                 transaction: action.transaction,
+//             };
+//         }
+//         throw new Error('Action not found');
+//     }, {retries: 30, delay: 1000});
+// }
