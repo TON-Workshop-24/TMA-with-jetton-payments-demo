@@ -58,6 +58,10 @@ export async function tryProcessJetton(orderId: string) : Promise<string> {
             address: 'EQB-MPwrd1G6WKNkLz_VnV6WqBDd142KMQv-g1O-8QUA3728',
             decimals: 6
         },
+        'jUSDT': {
+            address: 'EQBynBO23ywHy_CgarY9NK9FTz0yDsG82PtcbSTQgGoXwiuA',
+            decimals: 6
+        },
     }
     const jettons: Record<string, Jettons> = {};
 
@@ -97,7 +101,8 @@ export async function tryProcessJetton(orderId: string) : Promise<string> {
         const jettonWalletAddressString = jettonWalletAddress.toString();
         for (const name in jettons) {
             const jetton = jettons[name];
-            if (jetton.jettonWalletAddress.toString() === jettonWalletAddressString) {
+
+            if (jetton.jettonWallet.address.toString() === jettonWalletAddressString) {
                 return name;
             }
         }
@@ -130,21 +135,15 @@ export async function tryProcessJetton(orderId: string) : Promise<string> {
 
         for (const tx of Transactions) {
 
-            console.log('current transaction', tx.hash().toString('hex'));
-
             const sourceAddress = tx.inMessage?.info.src;
             if (!sourceAddress) {
                 // external message - not related to jettons
                 continue;
             }
 
-            console.log('source Address check passed', tx.hash().toString('hex'));
-
             if (!(sourceAddress instanceof Address)) {
                 continue;
             }
-
-            console.log('source Address instance check passed', tx.hash().toString('hex'));
 
             const in_msg = tx.inMessage;
 
@@ -153,31 +152,23 @@ export async function tryProcessJetton(orderId: string) : Promise<string> {
                 continue;
             }
 
-            console.log('internal type check', tx.hash().toString('hex'));
-
-            // TODO fix jetton transfer name check
-            // const jettonName = jettonWalletAddressToJettonName(sourceAddress);
-            // if (!jettonName) {
-            //     // unknown or fake jetton transfer
-            //     continue;
-            // }
-            //console.log('jetton Name passed', tx.hash().toString('hex'));
+            // jetton master contract address check
+            const jettonName = jettonWalletAddressToJettonName(sourceAddress);
+            if (!jettonName) {
+                // unknown or fake jetton transfer
+                continue;
+            }
 
             if (tx.inMessage === undefined || tx.inMessage?.body.hash().equals(new Cell().hash())) {
                 // no in_msg or in_msg body
                 continue;
             }
 
-            console.log('msg body', tx.hash().toString('hex'));
-
             const msgBody = tx.inMessage;
             const sender = tx.inMessage?.info.src;
             const originalBody = tx.inMessage?.body.beginParse();
             let body = originalBody?.clone();
             const op = body?.loadUint(32);
-
-            console.log('op code =', op);
-
             if (!(op == 0x7362d09c)) {
                 continue; // op == transfer_notification
             }
@@ -199,8 +190,8 @@ export async function tryProcessJetton(orderId: string) : Promise<string> {
             if (!(comment == orderId)) {
                 continue;
             }
-            // jettonName
-            console.log('Got ' + ' jetton deposit ' + amount?.toString() + ' units with text comment "' + comment + '"');
+            
+            console.log('Got ' + jettonName + ' jetton deposit ' + amount?.toString() + ' units with text comment "' + comment + '"');
             const txHash = tx.hash().toString('hex');
             return (txHash);
         }
