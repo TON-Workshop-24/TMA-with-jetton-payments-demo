@@ -118,13 +118,13 @@ The application will be accessible at [http://localhost:5173](http://localhost:5
 #### Using ngrok
 
 ```bash
-ngrok http 5173
+ngrok http 3000
 ```
 
 #### Using localtunnel
 
 ```bash
-lt --port 5173
+lt --port 3000
 ```
 
 After setting up ngrok or localtunnel, update your Telegram bot's configuration with the provided URL to ensure the bot points to your local development environment.
