@@ -108,7 +108,7 @@ Here is a sample configuration for adding a custom wallet:
 To start the application, run:
 
 ```bash
-npm dev
+npm run dev
 ```
 
 The application will be accessible at [http://localhost:5173](http://localhost:5173).
